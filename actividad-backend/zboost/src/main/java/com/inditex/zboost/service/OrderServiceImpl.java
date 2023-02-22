@@ -3,6 +3,7 @@ package com.inditex.zboost.service;
 import com.inditex.zboost.entity.Order;
 import com.inditex.zboost.entity.OrderDetail;
 import com.inditex.zboost.entity.ProductOrderItem;
+import com.inditex.zboost.exception.NotFoundException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -25,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findOrders(int limit) {
         /**
-         * TODO: EJERCICIO 2.a) Recupera un listado de los ultimos N pedidos (recuerda ordenar por fecha)
+         * EJERCICIO 2.a) Recupera un listado de los ultimos N pedidos (recuerda ordenar por fecha)
          */
 
         Map<String, Object> params = new HashMap<>();
@@ -64,13 +65,25 @@ public class OrderServiceImpl implements OrderService {
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);
         OrderDetail orderDetail = null;
-        String productOrdersSql = "SELECT *, PRICE*QUANTITY as total_product, FROM ORDER_ITEMS ord JOIN PRODUCTS p WHERE ord.ORDER_ID = :orderId AND ord.PRODUCT_ID = p.ID GROUP BY PRODUCT_ID";
-        List<String> orderList = jdbcTemplate.queryForList(productOrdersSql, (SqlParameterSource) params, String.class);
+
+        String orderDetailSql = "SELECT * FROM ORDERS WHERE ID = :orderId";
+        List<OrderDetail> orderDetailsList = jdbcTemplate.query(orderDetailSql, params, new BeanPropertyRowMapper<>(OrderDetail.class));
+        if(orderDetailsList.size()==0)
+            throw new NotFoundException("orderId", "Non exiting order.");
+        orderDetail = orderDetailsList.get(0);
 
         // Una vez has conseguido recuperar los detalles del pedido, faltaria recuperar los productos que forman parte de el...
-        String selected = "SELECT * FROM ORDER_ITEMS WHERE ORDER_ID = :orderId";
-        List<ProductOrderItem> products = jdbcTemplate.query(selected, params, new BeanPropertyRowMapper<>(ProductOrderItem.class));
+        String productOrdersSql = "SELECT * FROM ORDER_ITEMS ord JOIN PRODUCTS p ON p.ID = PRODUCT_ID WHERE ord.ORDER_ID = :orderId";
+        List<ProductOrderItem> products = jdbcTemplate.query(productOrdersSql, params, new BeanPropertyRowMapper<>(ProductOrderItem.class));
 
+        double total = 0;
+        int count = 0;
+        for (ProductOrderItem prod : products) {
+            total += prod.getQuantity() * prod.getPrice();
+            count += prod.getQuantity();
+        }
+        orderDetail.setItemsCount(count);
+        orderDetail.setTotalPrice(total);
         orderDetail.setProducts(products);
         return orderDetail;
     }

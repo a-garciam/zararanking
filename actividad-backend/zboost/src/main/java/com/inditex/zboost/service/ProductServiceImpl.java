@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -23,7 +24,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findProducts(Optional<List<String>> categories) {
         /**
-         * TODO: EJERCICIO 1.a) Utiliza el jdbcTemplate para recuperar productos por sus categorias. Si dicho filtro
+         * EJERCICIO 1.a) Utiliza el jdbcTemplate para recuperar productos por sus categorias. Si dicho filtro
          * no esta presente, recupera TODOS los productos del catalogo.
          *
          * Recuerda que el filtrado de categorias debe ser CASE-INSENSITIVE: la busqueda debe devolver los mismos resultados
@@ -40,16 +41,18 @@ public class ProductServiceImpl implements ProductService {
 
         Map<String, Object> params = new HashMap<>();
 
-
-        String sql = "SELECT * FROM PRODUCTS WHERE CATEGORY = :categories[1].upper()";
-
+        String sql = "SELECT * FROM PRODUCTS";
+        if (categories.isPresent() && !categories.get().isEmpty()) {
+            sql += " WHERE upper(CATEGORY) IN (:categories)";
+            params.put("categories", categories.get().stream().map(String::toUpperCase).collect(Collectors.toList()));
+        }
         return jdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Product.class));
     }
 
     @Override
     public List<String> findProductCategories() {
         /**
-         * TODO: EJERCICIO 1.b) Recupera las distintas categorias de los productos disponibles.
+         * EJERCICIO 1.b) Recupera las distintas categorias de los productos disponibles.
          */
 
         String sql = "SELECT DISTINCT(CATEGORY) FROM PRODUCTS";

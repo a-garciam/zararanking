@@ -26,7 +26,7 @@ public class OrderController {
     @GetMapping("/orders")
     public List<Order> getOrders(@RequestParam(name = "limit", required = true) int limit) {
         /**
-         * TODO: EJERCICIO 2.a) Parametro limit
+         * : EJERCICIO 2.a) Parametro limit
          *
          * Como buena practica, es recomendable realizar las validaciones de los parametros de entrada de las peticiones 
          * en la capa externa de la arquitectura, por lo que este seria un buen lugar para validar lo que se comenta en
