@@ -54,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDetail findOrderDetail(long orderId) {
         /**
-         * TODO: EJERCICIO 2.b) Recupera los detalles de un pedido dado su ID
+         * EJERCICIO 2.b) Recupera los detalles de un pedido dado su ID
          *
          * Recuerda que, si un pedido no es encontrado por su ID, debes notificarlo debidamente como se recoge en el contrato
          * que estas implementando (codigo de estado HTTP 404 Not Found). Para ello puedes usar la excepcion {@link com.inditex.zboost.exception.NotFoundException}
