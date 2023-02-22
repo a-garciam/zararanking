@@ -40,7 +40,8 @@ public class ProductServiceImpl implements ProductService {
 
         Map<String, Object> params = new HashMap<>();
 
-        String sql = "";
+
+        String sql = "SELECT * FROM PRODUCTS WHERE CATEGORY = :categories[1].upper()";
 
         return jdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Product.class));
     }
@@ -51,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
          * TODO: EJERCICIO 1.b) Recupera las distintas categorias de los productos disponibles.
          */
 
-        String sql = "";
+        String sql = "SELECT DISTINCT(CATEGORY) FROM PRODUCTS";
 
         return jdbcTemplate.queryForList(sql, (SqlParameterSource) null, String.class);
     }

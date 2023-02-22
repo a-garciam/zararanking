@@ -5,6 +5,7 @@ import com.inditex.zboost.entity.OrderDetail;
 import com.inditex.zboost.entity.ProductOrderItem;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,7 +31,7 @@ public class OrderServiceImpl implements OrderService {
         Map<String, Object> params = new HashMap<>();
         params.put("limit", limit);
 
-        String sql = "";
+        String sql = "SELECT * FROM ORDERS ORDER BY DATE DESC LIMIT :limit";
 
         return jdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Order.class));
     }
@@ -63,10 +64,12 @@ public class OrderServiceImpl implements OrderService {
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);
         OrderDetail orderDetail = null;
+        String productOrdersSql = "SELECT *, PRICE*QUANTITY as total_product, FROM ORDER_ITEMS ord JOIN PRODUCTS p WHERE ord.ORDER_ID = :orderId AND ord.PRODUCT_ID = p.ID GROUP BY PRODUCT_ID";
+        List<String> orderList = jdbcTemplate.queryForList(productOrdersSql, (SqlParameterSource) params, String.class);
 
         // Una vez has conseguido recuperar los detalles del pedido, faltaria recuperar los productos que forman parte de el...
-        String productOrdersSql = "";
-        List<ProductOrderItem> products = jdbcTemplate.query(productOrdersSql, params, new BeanPropertyRowMapper<>(ProductOrderItem.class));
+        String selected = "SELECT * FROM ORDER_ITEMS WHERE ORDER_ID = :orderId";
+        List<ProductOrderItem> products = jdbcTemplate.query(selected, params, new BeanPropertyRowMapper<>(ProductOrderItem.class));
 
         orderDetail.setProducts(products);
         return orderDetail;
